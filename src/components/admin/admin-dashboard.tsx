@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Settings, Calendar, Users, Trophy, AlertCircle, Plus, Eye, BarChart3 } from "lucide-react";
-import { ScheduleGenerator } from "../app/admin/schedule-generator";
+import { ScheduleGenerator } from "../../app/admin/schedule-generator";
 import { DivisionManager } from "./division-manager";
 import { TournamentCreator } from "./tournament-creator";
 import { SignupViewer } from "./signup-viewer";
