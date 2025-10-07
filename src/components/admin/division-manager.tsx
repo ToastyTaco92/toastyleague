@@ -51,7 +51,10 @@ export function DivisionManager() {
   useEffect(() => {
     const loadDivisions = async () => {
       try {
+        console.log("Admin: Loading divisions...");
         const result = await getDivisions();
+        console.log("Admin: Divisions result:", result);
+        
         if (result.success) {
           const formattedDivisions = result.divisions.map((div: any) => ({
             id: div.id,
@@ -69,11 +72,13 @@ export function DivisionManager() {
             rules: div.rules,
             entries: div.entries
           }));
+          console.log("Admin: Formatted divisions:", formattedDivisions);
           setDivisions(formattedDivisions);
         } else {
           setResult({ type: "error", message: "Failed to load divisions" });
         }
       } catch (error) {
+        console.error("Admin: Error loading divisions:", error);
         setResult({ type: "error", message: "Failed to load divisions" });
       } finally {
         setLoading(false);
