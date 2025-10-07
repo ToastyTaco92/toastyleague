@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ExternalLink, Users, Eye } from "lucide-react";
+import { TwitchEmbed } from "@/components/twitch-embed";
 
 export function LandingPage() {
   return (
@@ -134,15 +135,7 @@ export function LandingPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <div className="bg-white/80 rounded-lg p-6 mb-6">
-                  <div className="aspect-video bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg flex items-center justify-center mb-4">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-white font-bold text-xl">▶</span>
-                      </div>
-                      <p className="text-gray-600 font-medium">Live Stream Preview</p>
-                      <p className="text-sm text-gray-500">Watch Toast League matches live</p>
-                    </div>
-                  </div>
+                  <TwitchEmbed channel="toastytaco" className="mb-4" />
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="text-center">
                       <div className="font-semibold text-gray-900">Latest Stream</div>
