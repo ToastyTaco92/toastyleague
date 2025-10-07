@@ -252,6 +252,11 @@ export function AdminDashboard() {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Manage divisions, tournaments, schedules, and oversee all tournament operations.
           </p>
+          <div className="mt-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              ✨ New: Division & Tournament Management
+            </span>
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto">
