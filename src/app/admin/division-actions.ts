@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getMockDivisions, addMockDivision, updateMockDivision, deleteMockDivision } from "@/lib/mock-divisions";
+import { getMockDivisions, addMockDivision, updateMockDivision, deleteMockDivision } from "@/lib/persistent-mock-divisions";
 
 const prisma = new PrismaClient();
 
