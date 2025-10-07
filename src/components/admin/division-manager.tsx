@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, Trash2, Users, Calendar, Trophy, Settings } from "lucide-react";
+import { createDivision, updateDivision, deleteDivision, getDivisions } from "../../app/admin/division-actions";
 
 interface Division {
   id: string;
@@ -24,43 +25,12 @@ interface Division {
   game: string;
   platform: string;
   rules: string;
+  entries?: any[];
 }
 
-const mockDivisions: Division[] = [
-  {
-    id: "1",
-    name: "Rocket League - Bronze/Silver",
-    description: "Beginner to intermediate Rocket League players",
-    maxPlayers: 8,
-    currentPlayers: 3,
-    entryFee: 10,
-    prizePool: 80,
-    status: "OPEN",
-    startDate: "2024-01-15",
-    endDate: "2024-02-15",
-    game: "Rocket League",
-    platform: "PC/Console",
-    rules: "Standard 3v3 matches, best of 5 games"
-  },
-  {
-    id: "2", 
-    name: "Valorant - Gold/Platinum",
-    description: "Intermediate Valorant players",
-    maxPlayers: 16,
-    currentPlayers: 16,
-    entryFee: 15,
-    prizePool: 240,
-    status: "FULL",
-    startDate: "2024-01-20",
-    endDate: "2024-03-20",
-    game: "Valorant",
-    platform: "PC",
-    rules: "5v5 matches, best of 3 maps"
-  }
-];
-
 export function DivisionManager() {
-  const [divisions, setDivisions] = useState<Division[]>(mockDivisions);
+  const [divisions, setDivisions] = useState<Division[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [result, setResult] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -77,44 +47,104 @@ export function DivisionManager() {
     rules: ""
   });
 
+  // Load divisions from database
+  useEffect(() => {
+    const loadDivisions = async () => {
+      try {
+        const result = await getDivisions();
+        if (result.success) {
+          const formattedDivisions = result.divisions.map((div: any) => ({
+            id: div.id,
+            name: div.name,
+            description: div.description,
+            maxPlayers: div.maxPlayers,
+            currentPlayers: div.entries?.length || 0,
+            entryFee: div.entryFee,
+            prizePool: div.maxPlayers * div.entryFee,
+            status: div.status,
+            startDate: div.startDate,
+            endDate: div.endDate,
+            game: div.game,
+            platform: div.platform,
+            rules: div.rules,
+            entries: div.entries
+          }));
+          setDivisions(formattedDivisions);
+        } else {
+          setResult({ type: "error", message: "Failed to load divisions" });
+        }
+      } catch (error) {
+        setResult({ type: "error", message: "Failed to load divisions" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDivisions();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const formDataObj = new FormData();
+      formDataObj.append("name", formData.name);
+      formDataObj.append("description", formData.description);
+      formDataObj.append("maxPlayers", formData.maxPlayers.toString());
+      formDataObj.append("entryFee", formData.entryFee.toString());
+      formDataObj.append("startDate", formData.startDate);
+      formDataObj.append("endDate", formData.endDate);
+      formDataObj.append("game", formData.game);
+      formDataObj.append("platform", formData.platform);
+      formDataObj.append("rules", formData.rules);
+
+      let result;
       if (editingId) {
-        // Update existing division
-        setDivisions(prev => prev.map(div => 
-          div.id === editingId 
-            ? { ...div, ...formData, prizePool: formData.maxPlayers * formData.entryFee }
-            : div
-        ));
-        setResult({ type: "success", message: "Division updated successfully!" });
-        setEditingId(null);
+        result = await updateDivision(editingId, formDataObj);
       } else {
-        // Create new division
-        const newDivision: Division = {
-          id: Date.now().toString(),
-          ...formData,
-          currentPlayers: 0,
-          prizePool: formData.maxPlayers * formData.entryFee,
-          status: "OPEN" as const
-        };
-        setDivisions(prev => [...prev, newDivision]);
-        setResult({ type: "success", message: "Division created successfully!" });
+        result = await createDivision(formDataObj);
       }
-      
-      setFormData({
-        name: "",
-        description: "",
-        maxPlayers: 8,
-        entryFee: 10,
-        startDate: "",
-        endDate: "",
-        game: "",
-        platform: "",
-        rules: ""
-      });
-      setIsCreating(false);
+
+      if (result.success) {
+        setResult({ type: "success", message: editingId ? "Division updated successfully!" : "Division created successfully!" });
+        setEditingId(null);
+        setFormData({
+          name: "",
+          description: "",
+          maxPlayers: 8,
+          entryFee: 10,
+          startDate: "",
+          endDate: "",
+          game: "",
+          platform: "",
+          rules: ""
+        });
+        setIsCreating(false);
+        
+        // Reload divisions
+        const divisionsResult = await getDivisions();
+        if (divisionsResult.success) {
+          const formattedDivisions = divisionsResult.divisions.map((div: any) => ({
+            id: div.id,
+            name: div.name,
+            description: div.description,
+            maxPlayers: div.maxPlayers,
+            currentPlayers: div.entries?.length || 0,
+            entryFee: div.entryFee,
+            prizePool: div.maxPlayers * div.entryFee,
+            status: div.status,
+            startDate: div.startDate,
+            endDate: div.endDate,
+            game: div.game,
+            platform: div.platform,
+            rules: div.rules,
+            entries: div.entries
+          }));
+          setDivisions(formattedDivisions);
+        }
+      } else {
+        setResult({ type: "error", message: result.error || "Failed to save division. Please try again." });
+      }
     } catch (error) {
       setResult({ type: "error", message: "Failed to save division. Please try again." });
     }
@@ -136,10 +166,39 @@ export function DivisionManager() {
     setIsCreating(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this division?")) {
-      setDivisions(prev => prev.filter(div => div.id !== id));
-      setResult({ type: "success", message: "Division deleted successfully!" });
+      try {
+        const result = await deleteDivision(id);
+        if (result.success) {
+          setResult({ type: "success", message: "Division deleted successfully!" });
+          // Reload divisions
+          const divisionsResult = await getDivisions();
+          if (divisionsResult.success) {
+            const formattedDivisions = divisionsResult.divisions.map((div: any) => ({
+              id: div.id,
+              name: div.name,
+              description: div.description,
+              maxPlayers: div.maxPlayers,
+              currentPlayers: div.entries?.length || 0,
+              entryFee: div.entryFee,
+              prizePool: div.maxPlayers * div.entryFee,
+              status: div.status,
+              startDate: div.startDate,
+              endDate: div.endDate,
+              game: div.game,
+              platform: div.platform,
+              rules: div.rules,
+              entries: div.entries
+            }));
+            setDivisions(formattedDivisions);
+          }
+        } else {
+          setResult({ type: "error", message: result.error || "Failed to delete division" });
+        }
+      } catch (error) {
+        setResult({ type: "error", message: "Failed to delete division" });
+      }
     }
   };
 
@@ -321,8 +380,14 @@ export function DivisionManager() {
       )}
 
       {/* Divisions List */}
-      <div className="grid gap-4">
-        {divisions.map((division) => (
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading divisions...</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {divisions.map((division) => (
           <Card key={division.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -378,7 +443,8 @@ export function DivisionManager() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

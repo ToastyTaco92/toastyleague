@@ -1,0 +1,121 @@
+"use server";
+
+import { PrismaClient } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+
+const prisma = new PrismaClient();
+
+export async function createDivision(formData: FormData) {
+  try {
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const game = formData.get("game") as string;
+    const platform = formData.get("platform") as string;
+    const maxPlayers = parseInt(formData.get("maxPlayers") as string);
+    const entryFee = parseFloat(formData.get("entryFee") as string);
+    const startDate = formData.get("startDate") as string;
+    const endDate = formData.get("endDate") as string;
+    const rules = formData.get("rules") as string;
+
+    if (!name || !description || !game || !platform || !maxPlayers || !entryFee || !startDate || !endDate || !rules) {
+      return { success: false, error: "All fields are required" };
+    }
+
+    const division = await prisma.division.create({
+      data: {
+        name,
+        description,
+        game,
+        platform,
+        maxPlayers,
+        entryFee,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        rules,
+        status: "OPEN",
+        // For now, we'll use mock league and season IDs
+        leagueId: "mock-league-1",
+        seasonId: "mock-season-1"
+      }
+    });
+
+    revalidatePath("/admin");
+    return { success: true, division };
+  } catch (error) {
+    console.error("Error creating division:", error);
+    return { success: false, error: "Failed to create division" };
+  }
+}
+
+export async function updateDivision(divisionId: string, formData: FormData) {
+  try {
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const game = formData.get("game") as string;
+    const platform = formData.get("platform") as string;
+    const maxPlayers = parseInt(formData.get("maxPlayers") as string);
+    const entryFee = parseFloat(formData.get("entryFee") as string);
+    const startDate = formData.get("startDate") as string;
+    const endDate = formData.get("endDate") as string;
+    const rules = formData.get("rules") as string;
+
+    if (!name || !description || !game || !platform || !maxPlayers || !entryFee || !startDate || !endDate || !rules) {
+      return { success: false, error: "All fields are required" };
+    }
+
+    const division = await prisma.division.update({
+      where: { id: divisionId },
+      data: {
+        name,
+        description,
+        game,
+        platform,
+        maxPlayers,
+        entryFee,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        rules
+      }
+    });
+
+    revalidatePath("/admin");
+    return { success: true, division };
+  } catch (error) {
+    console.error("Error updating division:", error);
+    return { success: false, error: "Failed to update division" };
+  }
+}
+
+export async function deleteDivision(divisionId: string) {
+  try {
+    await prisma.division.delete({
+      where: { id: divisionId }
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting division:", error);
+    return { success: false, error: "Failed to delete division" };
+  }
+}
+
+export async function getDivisions() {
+  try {
+    const divisions = await prisma.division.findMany({
+      include: {
+        entries: true,
+        league: true,
+        season: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    return { success: true, divisions };
+  } catch (error) {
+    console.error("Error fetching divisions:", error);
+    return { success: false, error: "Failed to fetch divisions", divisions: [] };
+  }
+}

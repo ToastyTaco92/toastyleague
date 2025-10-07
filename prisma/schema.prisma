@@ -70,6 +70,7 @@ model Season {
   endDate     DateTime
   isOpen      Boolean  @default(true)
   leagues     League[]
+  divisions   Division[]
 }
 
 model Division {
@@ -77,9 +78,19 @@ model Division {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   name        String
+  description String?
+  game        String?
   platform    String
+  maxPlayers  Int      @default(8)
+  entryFee    Float    @default(10.0)
+  startDate   DateTime?
+  endDate     DateTime?
+  rules       String?
+  status      String   @default("OPEN")
   leagueId    String
+  seasonId    String?
   league      League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  season      Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
   slots       Int      @default(64)
   entries     Entry[]
   matches     Match[]
