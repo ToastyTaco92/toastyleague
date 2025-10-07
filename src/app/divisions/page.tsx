@@ -3,10 +3,17 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { getDivisions } from "@/app/admin/division-actions";
 
+// Force this page to be dynamic
+export const dynamic = 'force-dynamic';
+
 async function getDivisionsData() {
   try {
     const result = await getDivisions();
-    return result.success ? result.divisions : [];
+    if (result.success && result.divisions.length > 0) {
+      return result.divisions;
+    }
+    // If no divisions from database, return empty array
+    return [];
   } catch (error) {
     console.error("Error fetching divisions:", error);
     return [];
@@ -94,9 +101,17 @@ export default async function DivisionsPage() {
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
               No divisions available
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-4">
               Check back later for new divisions and seasons.
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-sm text-blue-700">
+                <strong>Admin:</strong> Create divisions in the{" "}
+                <Link href="/admin" className="text-blue-600 hover:text-blue-800 underline">
+                  Admin Dashboard
+                </Link>
+              </p>
+            </div>
           </div>
         )}
       </div>
