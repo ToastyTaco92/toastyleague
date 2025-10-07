@@ -8,11 +8,16 @@ export const dynamic = 'force-dynamic';
 
 async function getDivisionsData() {
   try {
+    console.log("Fetching divisions data...");
     const result = await getDivisions();
-    if (result.success && result.divisions.length > 0) {
+    console.log("Divisions result:", result);
+    
+    if (result.success && result.divisions && result.divisions.length > 0) {
+      console.log("Returning divisions:", result.divisions);
       return result.divisions;
     }
-    // If no divisions from database, return empty array
+    
+    console.log("No divisions found, returning empty array");
     return [];
   } catch (error) {
     console.error("Error fetching divisions:", error);

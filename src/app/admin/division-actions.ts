@@ -145,6 +145,7 @@ export async function deleteDivision(divisionId: string) {
 
 export async function getDivisions() {
   try {
+    console.log("Attempting to fetch divisions from database...");
     const divisions = await prisma.division.findMany({
       include: {
         entries: true,
@@ -156,11 +157,13 @@ export async function getDivisions() {
       }
     });
 
+    console.log("Database divisions found:", divisions.length);
     return { success: true, divisions: divisions || [] };
   } catch (error) {
-    console.error("Error fetching divisions:", error);
+    console.error("Error fetching divisions from database:", error);
     // Fallback to mock data
     const mockDivisions = getMockDivisions();
+    console.log("Using mock divisions:", mockDivisions.length);
     return { success: true, divisions: mockDivisions, message: "Using temporary storage" };
   }
 }
