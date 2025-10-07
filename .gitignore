@@ -1,0 +1,13 @@
+﻿# Node/Next
+node_modules/
+.next/
+out/
+dist/
+debug/
+# Env files
+.env
+.env.*
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/

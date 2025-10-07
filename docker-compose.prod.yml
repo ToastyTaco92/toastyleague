@@ -1,0 +1,22 @@
+﻿services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: toastyleague
+      POSTGRES_PASSWORD: toastypw
+      POSTGRES_DB: toastyleague
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+volumes:
+  dbdata:

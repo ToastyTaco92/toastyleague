@@ -1,0 +1,133 @@
+﻿generator client { provider = "prisma-client-js" }
+datasource db { provider = "sqlite"; url = env("DATABASE_URL") }
+
+model User {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  email         String   @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  gamerTag      String?
+  platform      String?
+  isAdmin       Boolean  @default(false)
+  entries       Entry[]
+  evidence      Evidence[]
+}
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model League {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  game        String
+  rulesUrl    String?
+  seasonId    String
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  divisions   Division[]
+}
+model Season {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  isOpen      Boolean  @default(true)
+  leagues     League[]
+}
+model Division {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  platform    String
+  leagueId    String
+  league      League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  slots       Int      @default(64)
+  entries     Entry[]
+  matches     Match[]
+}
+model Entry {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  userId      String
+  divisionId  String
+  paid        Boolean  @default(false)
+  status      String   @default("CONFIRMED")
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  division Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  payments Payment[]
+}
+model Match {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  divisionId   String
+  round        Int
+  scheduledAt  DateTime
+  homeEntryId  String
+  awayEntryId  String
+  homeScore    Int?
+  awayScore    Int?
+  status       String   @default("SCHEDULED")
+  division  Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  homeEntry Entry    @relation("home", fields: [homeEntryId], references: [id])
+  awayEntry Entry    @relation("away", fields: [awayEntryId], references: [id])
+  evidence  Evidence[]
+  disputes  Dispute[]
+}
+model Evidence {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  url       String
+  kind      String
+  userId    String
+  matchId   String
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+model Dispute {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  matchId   String
+  reason    String
+  status    String   @default("OPEN")
+  notes     String?
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+model Payment {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  entryId     String
+  amountCents Int
+  status      String   @default("PENDING")
+  provider    String?
+  providerRef String?
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+}
