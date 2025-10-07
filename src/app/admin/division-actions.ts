@@ -21,6 +21,31 @@ export async function createDivision(formData: FormData) {
       return { success: false, error: "All fields are required" };
     }
 
+    // First, ensure we have a default season
+    let season = await prisma.season.findFirst();
+    if (!season) {
+      season = await prisma.season.create({
+        data: {
+          name: "Season 1 (Pilot)",
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 3 months from now
+          isOpen: true
+        }
+      });
+    }
+
+    // Then ensure we have a default league
+    let league = await prisma.league.findFirst();
+    if (!league) {
+      league = await prisma.league.create({
+        data: {
+          title: "Toast League",
+          game: "Multi-Game",
+          seasonId: season.id
+        }
+      });
+    }
+
     const division = await prisma.division.create({
       data: {
         name,
@@ -33,9 +58,8 @@ export async function createDivision(formData: FormData) {
         endDate: new Date(endDate),
         rules,
         status: "OPEN",
-        // For now, we'll use mock league and season IDs
-        leagueId: "mock-league-1",
-        seasonId: "mock-season-1"
+        leagueId: league.id,
+        seasonId: season.id
       }
     });
 
@@ -113,7 +137,7 @@ export async function getDivisions() {
       }
     });
 
-    return { success: true, divisions };
+    return { success: true, divisions: divisions || [] };
   } catch (error) {
     console.error("Error fetching divisions:", error);
     return { success: false, error: "Failed to fetch divisions", divisions: [] };

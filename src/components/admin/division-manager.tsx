@@ -387,7 +387,25 @@ export function DivisionManager() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {divisions.map((division) => (
+          {divisions.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <div className="text-gray-500 mb-4">
+                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No divisions yet</h3>
+                  <p className="text-gray-600">Create your first division to get started with tournament management.</p>
+                </div>
+                <Button 
+                  onClick={() => setIsCreating(true)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Your First Division
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            divisions.map((division) => (
           <Card key={division.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -442,7 +460,7 @@ export function DivisionManager() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )))}
         </div>
       )}
     </div>
