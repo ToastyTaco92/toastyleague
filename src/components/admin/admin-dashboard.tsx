@@ -10,6 +10,7 @@ import { DivisionManager } from "./division-manager";
 import { TournamentCreator } from "./tournament-creator";
 import { SignupViewer } from "./signup-viewer";
 import { getDisputedMatches } from "@/lib/mock-data";
+import { testDatabase } from "../../app/admin/test-db";
 import Link from "next/link";
 
 type TabType = "overview" | "divisions" | "tournaments" | "signups" | "schedule" | "disputes";
@@ -131,6 +132,16 @@ export function AdminDashboard() {
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View Signups
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={async () => {
+                      const result = await testDatabase();
+                      alert(JSON.stringify(result, null, 2));
+                    }}
+                  >
+                    🔧 Test Database
                   </Button>
                 </CardContent>
               </Card>
