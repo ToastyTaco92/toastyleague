@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  email         String   @unique
+  name          String?
+  gamertag      String   @unique
+  avatar        String?
+  bio           String?
+  socialLinks   Json?
+  isVerified    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  entries       Entry[]
+  payments      Payment[]
+  homeMatches   Match[]  @relation("home")
+  awayMatches   Match[]  @relation("away")
+  evidence      Evidence[]
+}
+
+model Season {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  isOpen      Boolean  @default(true)
+  leagues     League[]
+  divisions   Division[]
+}
+
+model League {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  game        String
+  rulesUrl    String?
+  seasonId    String
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  divisions   Division[]
+}
+
+model Division {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String?
+  game        String?
+  platform    String
+  maxPlayers  Int      @default(8)
+  entryFee    Float    @default(10.0)
+  startDate   DateTime?
+  endDate     DateTime?
+  rules       String?
+  status      String   @default("OPEN")
+  leagueId    String
+  seasonId    String?
+  league      League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  season      Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  slots       Int      @default(64)
+  entries     Entry[]
+  matches     Match[]
+}
+
+model Entry {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  userId      String
+  divisionId  String
+  paid        Boolean  @default(false)
+  status      String   @default("CONFIRMED")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  division    Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  payments    Payment[]
+  homeMatches Match[]  @relation("home")
+  awayMatches Match[]  @relation("away")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  amount    Float
+  currency  String   @default("USD")
+  status    String   @default("PENDING")
+  method    String?
+  transactionId String?
+  entryId   String
+  userId    String
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  divisionId  String
+  homeEntryId String
+  awayEntryId String
+  round       Int
+  scheduledAt DateTime
+  status      String   @default("SCHEDULED")
+  homeScore   Int?
+  awayScore   Int?
+  division    Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  homeEntry   Entry    @relation("home", fields: [homeEntryId], references: [id], onDelete: Cascade)
+  awayEntry   Entry    @relation("away", fields: [awayEntryId], references: [id], onDelete: Cascade)
+  evidence    Evidence[]
+}
+
+model Evidence {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  matchId     String
+  submittedBy String
+  url         String
+  description String?
+  type        String   @default("SCORE_DISPUTE")
+  status      String   @default("PENDING")
+  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [submittedBy], references: [id], onDelete: Cascade)
+}
