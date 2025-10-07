@@ -1,15 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { getMockDivisions, MockDivision } from "@/lib/mock-data";
+import { getDivisions } from "@/app/admin/division-actions";
 
-async function getDivisions(): Promise<MockDivision[]> {
-  // Using mock data for now - will be replaced with Prisma queries
-  return getMockDivisions();
+async function getDivisionsData() {
+  try {
+    const result = await getDivisions();
+    return result.success ? result.divisions : [];
+  } catch (error) {
+    console.error("Error fetching divisions:", error);
+    return [];
+  }
 }
 
 export default async function DivisionsPage() {
-  const divisions = await getDivisions();
+  const divisions = await getDivisionsData();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -24,8 +29,9 @@ export default async function DivisionsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {divisions.map((division) => {
-            const slotsRemaining = division.slots - division.entries.length;
+          {divisions.map((division: any) => {
+            const entries = division.entries || [];
+            const slotsRemaining = division.maxPlayers - entries.length;
             const isFull = slotsRemaining <= 0;
             
             return (
@@ -41,7 +47,7 @@ export default async function DivisionsPage() {
                       </Badge>
                     </div>
                     <CardDescription className="text-base">
-                      {division.league.title} • {division.league.season.name}
+                      {division.league?.title || "Toast League"} • {division.season?.name || "Season 1 (Pilot)"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -52,15 +58,15 @@ export default async function DivisionsPage() {
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Game:</span>
-                        <span className="font-medium">{division.league.game}</span>
+                        <span className="font-medium">{division.game || division.league?.game || "Multi-Game"}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Total Slots:</span>
-                        <span className="font-medium">{division.slots}</span>
+                        <span className="font-medium">{division.maxPlayers}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Registered:</span>
-                        <span className="font-medium">{division.entries.length}</span>
+                        <span className="font-medium">{entries.length}</span>
                       </div>
                       
                       <div className="pt-2">
@@ -70,7 +76,7 @@ export default async function DivisionsPage() {
                               isFull ? 'bg-red-500' : 'bg-blue-500'
                             }`}
                             style={{ 
-                              width: `${Math.min((division.entries.length / division.slots) * 100, 100)}%` 
+                              width: `${Math.min((entries.length / division.maxPlayers) * 100, 100)}%` 
                             }}
                           ></div>
                         </div>
