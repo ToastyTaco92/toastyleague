@@ -1,0 +1,38 @@
+[
+  {
+    "id": "valorant-champ",
+    "name": "Valorant Championship",
+    "description": "Competitive Valorant tournament for all skill levels",
+    "game": "Valorant",
+    "platform": "PC",
+    "maxPlayers": 16,
+    "entryFee": 15,
+    "startDate": "2025-01-15",
+    "endDate": "2025-02-15",
+    "rules": "Standard Valorant competitive rules. Best of 3 matches.",
+    "status": "OPEN",
+    "currentPlayers": 0,
+    "prizePool": 240,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z",
+    "entries": []
+  },
+  {
+    "id": "rocket-league-tourney",
+    "name": "Rocket League Tournament",
+    "description": "Fast-paced Rocket League competition",
+    "game": "Rocket League",
+    "platform": "Multi-Platform",
+    "maxPlayers": 8,
+    "entryFee": 10,
+    "startDate": "2025-01-20",
+    "endDate": "2025-02-20",
+    "rules": "3v3 matches, best of 5 games",
+    "status": "OPEN",
+    "currentPlayers": 0,
+    "prizePool": 80,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z",
+    "entries": []
+  }
+]
