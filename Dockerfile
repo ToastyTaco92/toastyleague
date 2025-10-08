@@ -19,8 +19,8 @@ RUN pnpm install --frozen-lockfile
 # Copy rest of source code
 COPY . .
 
-# Build the application
-RUN pnpm build
+# Build the application (skip prisma generate since it's already done)
+RUN pnpm run build:docker
 
 # Expose port
 EXPOSE 3000
