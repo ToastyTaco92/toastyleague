@@ -99,12 +99,21 @@ This application is designed to run on **Railway**.
 
 4. **Deploy**: Railway will automatically deploy from your GitHub repository
 
+### Railway Deployment Architecture
+
+**Important**: This project uses `builder: "DOCKERFILE"` in `railway.json`, which means:
+- Railway ignores `startCommand` in `railway.json` when using Dockerfile
+- The Dockerfile `CMD` handles the startup sequence
+- Database migrations run automatically before the server starts
+
 The application will automatically:
 - Install dependencies
 - Generate Prisma client (`postinstall` script)
 - Build the Next.js application
-- Run database migrations (`migrate:deploy` with fallback to `db push`)
+- Run database migrations (`migrate:deploy` with fallback to `db push`) via Dockerfile CMD
 - Start the server
+
+**Migration Process**: The Dockerfile CMD executes `npm run migrate:deploy && npm start`, ensuring Prisma migrations complete before the Next.js server starts.
 
 ## Database Schema
 
