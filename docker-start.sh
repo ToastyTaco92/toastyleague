@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-echo "▶ Prisma: migrate deploy (fallback to db push if no migrations)"
+echo "▶ Prisma: migrate deploy (fallback to db push)"
 npx prisma migrate deploy || npx prisma db push
 
 echo "▶ Prisma: generate client"

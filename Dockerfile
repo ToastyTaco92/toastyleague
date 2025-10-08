@@ -1,39 +1,25 @@
-﻿# Use Node.js 20 as base image
-FROM node:20-alpine
+﻿FROM node:20-alpine
 
-# Force rebuild - Railway migration fix
-
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Only package manifests first for better layer caching
+COPY package.json pnpm-lock.yaml* ./
 
-# Copy Prisma schema first (needed for postinstall)
-COPY prisma ./prisma/
-
-# Install dependencies using npm (more reliable in Docker)
 RUN npm install
 
-# Copy rest of source code
+# Copy rest of project
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client and build Next
 RUN npx prisma generate
-
-# Build the application
 RUN npm run build
 
-# Expose port
+# Copy entrypoint and make it executable
+COPY docker-start.sh /app/docker-start.sh
+RUN chmod +x /app/docker-start.sh
+
+# Railway will provide $PORT
 EXPOSE 3000
 
-# Start the application
-COPY docker-start.sh /app/docker-start.sh
-RUN chmod +x /app/docker-start.sh
-
-# IMPORTANT: If there is an existing CMD below or above, remove it.
-
-# --- Railway runtime: run Prisma then start Next.js ---
-COPY docker-start.sh /app/docker-start.sh
-RUN chmod +x /app/docker-start.sh
+# Always run Prisma before Next.js
 CMD ["/app/docker-start.sh"]
