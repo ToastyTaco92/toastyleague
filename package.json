@@ -5,8 +5,8 @@
     "scripts":  {
                     "dev":  "next dev -p 3001",
                     "build":  "next build",
-                    "start":  "next start -p $PORT",
-                    "migrate:deploy":  "prisma migrate deploy || prisma db push",
+                    "start":  "sh -c \"npx prisma migrate deploy || npx prisma db push; npx prisma generate; next start -p $PORT\"",
+                    "migrate:deploy":  "prisma migrate deploy",
                     "lint":  "eslint",
                     "postinstall":  "prisma generate",
                     "db:push":  "prisma db push",
