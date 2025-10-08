@@ -26,4 +26,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run migrate:deploy && npm start"]
