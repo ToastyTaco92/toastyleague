@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getStoredDivisions, addStoredDivision, updateStoredDivision, deleteStoredDivision } from "@/lib/divisions-storage";
+import { getStoredDivisions, addStoredDivision, updateStoredDivision, deleteStoredDivision } from "@/lib/vercel-storage";
 
 const prisma = new PrismaClient();
 
