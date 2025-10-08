@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getPersistentDivisions, addPersistentDivision, updatePersistentDivision, deletePersistentDivision } from "@/lib/persistent-divisions";
+import { getDivisionsFromDB, addDivisionToDB, updateDivisionInDB, deleteDivisionFromDB } from "@/lib/simple-db";
 
 const prisma = new PrismaClient();
 
@@ -69,9 +69,9 @@ export async function createDivision(formData: FormData) {
     return { success: true, division };
   } catch (error) {
     console.error("Error creating division:", error);
-    // Fallback to persistent data
+    // Fallback to simple database
     try {
-      const persistentDivision = addPersistentDivision({
+      const dbDivision = addDivisionToDB({
         name: name,
         description: description,
         game: game,
@@ -84,7 +84,7 @@ export async function createDivision(formData: FormData) {
       });
       revalidatePath("/admin");
       revalidatePath("/divisions");
-      return { success: true, division: persistentDivision, message: "Division created successfully!" };
+      return { success: true, division: dbDivision, message: "Division created successfully!" };
     } catch (storageError) {
       return { success: false, error: `Failed to create division: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
@@ -129,7 +129,7 @@ export async function updateDivision(divisionId: string, formData: FormData) {
     console.error("Error updating division:", error);
     // Fallback to cached data
     try {
-      const persistentDivision = updatePersistentDivision(divisionId, {
+      const dbDivision = updateDivisionInDB(divisionId, {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
         game: formData.get("game") as string,
@@ -140,10 +140,10 @@ export async function updateDivision(divisionId: string, formData: FormData) {
         endDate: formData.get("endDate") as string,
         rules: formData.get("rules") as string
       });
-      if (persistentDivision) {
+      if (dbDivision) {
         revalidatePath("/admin");
         revalidatePath("/divisions");
-        return { success: true, division: persistentDivision };
+        return { success: true, division: dbDivision };
       }
     } catch (cacheError) {
       console.error("Error updating cached division:", cacheError);
@@ -165,7 +165,7 @@ export async function deleteDivision(divisionId: string) {
     console.error("Error deleting division:", error);
     // Fallback to cached data
     try {
-      const deleted = deletePersistentDivision(divisionId);
+      const deleted = deleteDivisionFromDB(divisionId);
       if (deleted) {
         revalidatePath("/admin");
         revalidatePath("/divisions");
@@ -196,9 +196,9 @@ export async function getDivisions() {
     return { success: true, divisions: divisions || [] };
   } catch (error) {
     console.error("Error fetching divisions from database:", error);
-    // Fallback to persistent data
-    const persistentDivisions = getPersistentDivisions();
-    console.log("Using persistent divisions:", persistentDivisions.length);
-    return { success: true, divisions: persistentDivisions, message: "Using persistent data" };
+    // Fallback to simple database
+    const dbDivisions = getDivisionsFromDB();
+    console.log("Using database divisions:", dbDivisions.length);
+    return { success: true, divisions: dbDivisions, message: "Using database data" };
   }
 }
