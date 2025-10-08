@@ -1,8 +1,11 @@
-﻿#!/bin/sh
-set -e
+#!/bin/sh
+set -eu
 
-echo "Running Prisma migrations..."
+echo "▶ Prisma: migrate deploy (fallback to db push if no migrations)"
 npx prisma migrate deploy || npx prisma db push
 
-echo "Starting Next.js..."
-npm run start
+echo "▶ Prisma: generate client"
+npx prisma generate
+
+echo "▶ Starting Next.js on port ${PORT:-3000}"
+npm start

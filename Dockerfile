@@ -28,9 +28,12 @@ RUN npm run build
 EXPOSE 3000
 
 # Start the application
-CMD ["sh", "-c", "npm run migrate:deploy && npm start"]# ---- Railway entrypoint to run migrations then start Next.js ----
 COPY docker-start.sh /app/docker-start.sh
 RUN chmod +x /app/docker-start.sh
 
 # IMPORTANT: If there is an existing CMD below or above, remove it.
+
+# --- Railway runtime: run Prisma then start Next.js ---
+COPY docker-start.sh /app/docker-start.sh
+RUN chmod +x /app/docker-start.sh
 CMD ["/app/docker-start.sh"]
