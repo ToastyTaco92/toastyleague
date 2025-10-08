@@ -11,12 +11,15 @@ async function getDivisionsData() {
     console.log("Fetching divisions data...");
     const result = await getDivisions();
     console.log("Divisions result:", result);
-    
+    console.log("Result success:", result.success);
+    console.log("Divisions count:", result.divisions?.length || 0);
+    console.log("Divisions data:", JSON.stringify(result.divisions, null, 2));
+
     if (result.success && result.divisions && result.divisions.length > 0) {
       console.log("Returning divisions:", result.divisions);
       return result.divisions;
     }
-    
+
     console.log("No divisions found, returning empty array");
     return [];
   } catch (error) {
