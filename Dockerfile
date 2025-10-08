@@ -1,16 +1,29 @@
-﻿# --- build ---
-FROM node:20 AS builder
+﻿# Use Node.js 20 as base image
+FROM node:20-alpine
+
+# Set working directory
 WORKDIR /app
-COPY package.json pnpm-lock.yaml* ./
+
+# Enable corepack for pnpm
 RUN corepack enable && corepack prepare pnpm@9 --activate
-COPY . .
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
 RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Generate Prisma client
+RUN pnpm prisma generate
+
+# Build the application
 RUN pnpm build
 
-# --- run ---
-FROM node:20
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app /app
+# Expose port
 EXPOSE 3000
-CMD ["pnpm","start"]
+
+# Start the application
+CMD ["pnpm", "start"]
