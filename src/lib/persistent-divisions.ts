@@ -1,4 +1,4 @@
-// Persistent divisions storage that works in Vercel environment
+// Persistent divisions storage for production environment
 // This uses a combination of techniques to ensure data persists
 
 interface Division {

@@ -1,4 +1,4 @@
-// Vercel-compatible storage using a simple in-memory approach with better persistence
+// Production-compatible storage using a simple in-memory approach with better persistence
 // This uses a combination of techniques that work better in serverless environments
 
 interface Division {

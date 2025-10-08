@@ -7,6 +7,9 @@ debug/
 # Env files
 .env
 .env.*
+# Database files
+*.db
+*.db-journal
 # OS/editor
 .DS_Store
 Thumbs.db

@@ -10,7 +10,7 @@ console.log('🚀 Setting up production database...');
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   console.error('❌ DATABASE_URL environment variable is not set');
-  console.log('Please set your Neon PostgreSQL connection string in Vercel environment variables');
+  console.log('Please set your PostgreSQL connection string in Railway environment variables');
   process.exit(1);
 }
 

@@ -8,9 +8,11 @@
                     "start":  "next start -p $PORT",
                     "lint":  "eslint",
                     "postinstall":  "prisma generate",
+                    "migrate:deploy":  "prisma migrate deploy || prisma db push",
                     "db:push":  "prisma db push",
                     "db:migrate":  "prisma migrate deploy",
-                    "db:setup-prod":  "node scripts/setup-production-db.js"
+                    "db:setup-prod":  "node scripts/setup-production-db.js",
+                    "debug:env":  "node scripts/print-env.js"
                 },
     "dependencies":  {
                          "@prisma/client":  "^6.17.0",
