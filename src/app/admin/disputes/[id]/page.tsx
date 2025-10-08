@@ -27,9 +27,9 @@ async function getDisputeDetails(id: string) {
 }
 
 interface DisputeDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function DisputeDetailPage({ params }: DisputeDetailPageProps) {

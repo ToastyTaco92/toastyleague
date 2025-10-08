@@ -7,9 +7,9 @@ import { ReportScoreForm } from "./report-score-form";
 import { EvidenceUpload } from "./evidence-upload";
 
 interface MatchPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 async function getMatchData(matchId: string) {

@@ -12,9 +12,9 @@ async function getDivision(id: string): Promise<MockDivision | null> {
 }
 
 interface DivisionPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function DivisionPage({ params }: DivisionPageProps) {

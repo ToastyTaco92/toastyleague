@@ -14,9 +14,9 @@ async function getStandingsData(divisionId: string) {
 }
 
 interface StandingsPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function StandingsPage({ params }: StandingsPageProps) {
