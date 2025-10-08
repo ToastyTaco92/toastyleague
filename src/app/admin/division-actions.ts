@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getCachedDivisions, addCachedDivision, updateCachedDivision, deleteCachedDivision } from "@/lib/global-divisions-cache";
+import { getStoredDivisions, addStoredDivision, updateStoredDivision, deleteStoredDivision } from "@/lib/divisions-storage";
 
 const prisma = new PrismaClient();
 
@@ -69,9 +69,9 @@ export async function createDivision(formData: FormData) {
     return { success: true, division };
   } catch (error) {
     console.error("Error creating division:", error);
-    // Fallback to cached data
+    // Fallback to stored data
     try {
-      const cachedDivision = addCachedDivision({
+      const storedDivision = addStoredDivision({
         name: name,
         description: description,
         game: game,
@@ -84,8 +84,8 @@ export async function createDivision(formData: FormData) {
       });
       revalidatePath("/admin");
       revalidatePath("/divisions");
-      return { success: true, division: cachedDivision, message: "Division created successfully!" };
-    } catch (cacheError) {
+      return { success: true, division: storedDivision, message: "Division created successfully!" };
+    } catch (storageError) {
       return { success: false, error: `Failed to create division: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
@@ -129,7 +129,7 @@ export async function updateDivision(divisionId: string, formData: FormData) {
     console.error("Error updating division:", error);
     // Fallback to cached data
     try {
-      const cachedDivision = updateCachedDivision(divisionId, {
+      const storedDivision = updateStoredDivision(divisionId, {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
         game: formData.get("game") as string,
@@ -140,10 +140,10 @@ export async function updateDivision(divisionId: string, formData: FormData) {
         endDate: formData.get("endDate") as string,
         rules: formData.get("rules") as string
       });
-      if (cachedDivision) {
+      if (storedDivision) {
         revalidatePath("/admin");
         revalidatePath("/divisions");
-        return { success: true, division: cachedDivision };
+        return { success: true, division: storedDivision };
       }
     } catch (cacheError) {
       console.error("Error updating cached division:", cacheError);
@@ -165,7 +165,7 @@ export async function deleteDivision(divisionId: string) {
     console.error("Error deleting division:", error);
     // Fallback to cached data
     try {
-      const deleted = deleteCachedDivision(divisionId);
+      const deleted = deleteStoredDivision(divisionId);
       if (deleted) {
         revalidatePath("/admin");
         revalidatePath("/divisions");
@@ -196,9 +196,9 @@ export async function getDivisions() {
     return { success: true, divisions: divisions || [] };
   } catch (error) {
     console.error("Error fetching divisions from database:", error);
-    // Fallback to cached data
-    const cachedDivisions = getCachedDivisions();
-    console.log("Using cached divisions:", cachedDivisions.length);
-    return { success: true, divisions: cachedDivisions, message: "Using cached data" };
+    // Fallback to stored data
+    const storedDivisions = getStoredDivisions();
+    console.log("Using stored divisions:", storedDivisions.length);
+    return { success: true, divisions: storedDivisions, message: "Using stored data" };
   }
 }
