@@ -2,7 +2,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getMockDivisions, addMockDivision, updateMockDivision, deleteMockDivision } from "@/lib/persistent-mock-divisions";
+import { getCachedDivisions, addCachedDivision, updateCachedDivision, deleteCachedDivision } from "@/lib/global-divisions-cache";
 
 const prisma = new PrismaClient();
 
@@ -69,9 +69,9 @@ export async function createDivision(formData: FormData) {
     return { success: true, division };
   } catch (error) {
     console.error("Error creating division:", error);
-    // Fallback to mock data
+    // Fallback to cached data
     try {
-      const mockDivision = addMockDivision({
+      const cachedDivision = addCachedDivision({
         name: name,
         description: description,
         game: game,
@@ -83,8 +83,9 @@ export async function createDivision(formData: FormData) {
         rules: rules
       });
       revalidatePath("/admin");
-      return { success: true, division: mockDivision, message: "Division created (using temporary storage)" };
-    } catch (mockError) {
+      revalidatePath("/divisions");
+      return { success: true, division: cachedDivision, message: "Division created successfully!" };
+    } catch (cacheError) {
       return { success: false, error: `Failed to create division: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
@@ -122,9 +123,31 @@ export async function updateDivision(divisionId: string, formData: FormData) {
     });
 
     revalidatePath("/admin");
+    revalidatePath("/divisions");
     return { success: true, division };
   } catch (error) {
     console.error("Error updating division:", error);
+    // Fallback to cached data
+    try {
+      const cachedDivision = updateCachedDivision(divisionId, {
+        name: formData.get("name") as string,
+        description: formData.get("description") as string,
+        game: formData.get("game") as string,
+        platform: formData.get("platform") as string,
+        maxPlayers: parseInt(formData.get("maxPlayers") as string),
+        entryFee: parseFloat(formData.get("entryFee") as string),
+        startDate: formData.get("startDate") as string,
+        endDate: formData.get("endDate") as string,
+        rules: formData.get("rules") as string
+      });
+      if (cachedDivision) {
+        revalidatePath("/admin");
+        revalidatePath("/divisions");
+        return { success: true, division: cachedDivision };
+      }
+    } catch (cacheError) {
+      console.error("Error updating cached division:", cacheError);
+    }
     return { success: false, error: "Failed to update division" };
   }
 }
@@ -136,9 +159,21 @@ export async function deleteDivision(divisionId: string) {
     });
 
     revalidatePath("/admin");
+    revalidatePath("/divisions");
     return { success: true };
   } catch (error) {
     console.error("Error deleting division:", error);
+    // Fallback to cached data
+    try {
+      const deleted = deleteCachedDivision(divisionId);
+      if (deleted) {
+        revalidatePath("/admin");
+        revalidatePath("/divisions");
+        return { success: true };
+      }
+    } catch (cacheError) {
+      console.error("Error deleting cached division:", cacheError);
+    }
     return { success: false, error: "Failed to delete division" };
   }
 }
@@ -161,9 +196,9 @@ export async function getDivisions() {
     return { success: true, divisions: divisions || [] };
   } catch (error) {
     console.error("Error fetching divisions from database:", error);
-    // Fallback to mock data
-    const mockDivisions = getMockDivisions();
-    console.log("Using mock divisions:", mockDivisions.length);
-    return { success: true, divisions: mockDivisions, message: "Using temporary storage" };
+    // Fallback to cached data
+    const cachedDivisions = getCachedDivisions();
+    console.log("Using cached divisions:", cachedDivisions.length);
+    return { success: true, divisions: cachedDivisions, message: "Using cached data" };
   }
 }
