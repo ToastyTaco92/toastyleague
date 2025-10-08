@@ -2,11 +2,11 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getDivisionsFromDB, addDivisionToDB, updateDivisionInDB, deleteDivisionFromDB } from "@/lib/simple-db";
+import { getAllDivisions, createDivision, updateDivision, deleteDivision } from "@/lib/database";
 
 const prisma = new PrismaClient();
 
-export async function createDivision(formData: FormData) {
+export async function createDivisionAction(formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const game = formData.get("game") as string;
@@ -69,9 +69,9 @@ export async function createDivision(formData: FormData) {
     return { success: true, division };
   } catch (error) {
     console.error("Error creating division:", error);
-    // Fallback to simple database
+    // Fallback to database
     try {
-      const dbDivision = addDivisionToDB({
+      const dbDivision = createDivision({
         name: name,
         description: description,
         game: game,
@@ -91,7 +91,7 @@ export async function createDivision(formData: FormData) {
   }
 }
 
-export async function updateDivision(divisionId: string, formData: FormData) {
+export async function updateDivisionAction(divisionId: string, formData: FormData) {
   try {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
@@ -129,7 +129,7 @@ export async function updateDivision(divisionId: string, formData: FormData) {
     console.error("Error updating division:", error);
     // Fallback to cached data
     try {
-      const dbDivision = updateDivisionInDB(divisionId, {
+      const dbDivision = updateDivision(divisionId, {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
         game: formData.get("game") as string,
@@ -152,7 +152,7 @@ export async function updateDivision(divisionId: string, formData: FormData) {
   }
 }
 
-export async function deleteDivision(divisionId: string) {
+export async function deleteDivisionAction(divisionId: string) {
   try {
     await prisma.division.delete({
       where: { id: divisionId }
@@ -165,7 +165,7 @@ export async function deleteDivision(divisionId: string) {
     console.error("Error deleting division:", error);
     // Fallback to cached data
     try {
-      const deleted = deleteDivisionFromDB(divisionId);
+      const deleted = deleteDivision(divisionId);
       if (deleted) {
         revalidatePath("/admin");
         revalidatePath("/divisions");
@@ -196,8 +196,8 @@ export async function getDivisions() {
     return { success: true, divisions: divisions || [] };
   } catch (error) {
     console.error("Error fetching divisions from database:", error);
-    // Fallback to simple database
-    const dbDivisions = getDivisionsFromDB();
+    // Fallback to database
+    const dbDivisions = getAllDivisions();
     console.log("Using database divisions:", dbDivisions.length);
     return { success: true, divisions: dbDivisions, message: "Using database data" };
   }

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, Trash2, Users, Calendar, Trophy, Settings } from "lucide-react";
-import { createDivision, updateDivision, deleteDivision, getDivisions } from "../../app/admin/division-actions";
+import { createDivisionAction, updateDivisionAction, deleteDivisionAction, getDivisions } from "../../app/admin/division-actions";
 
 interface Division {
   id: string;
@@ -103,12 +103,12 @@ export function DivisionManager() {
       formDataObj.append("platform", formData.platform);
       formDataObj.append("rules", formData.rules);
 
-      let result;
-      if (editingId) {
-        result = await updateDivision(editingId, formDataObj);
-      } else {
-        result = await createDivision(formDataObj);
-      }
+             let result;
+             if (editingId) {
+               result = await updateDivisionAction(editingId, formDataObj);
+             } else {
+               result = await createDivisionAction(formDataObj);
+             }
 
       if (result.success) {
         setResult({ type: "success", message: editingId ? "Division updated successfully!" : "Division created successfully!" });
@@ -174,7 +174,7 @@ export function DivisionManager() {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this division?")) {
       try {
-        const result = await deleteDivision(id);
+               const result = await deleteDivisionAction(id);
         if (result.success) {
           setResult({ type: "success", message: "Division deleted successfully!" });
           // Reload divisions
